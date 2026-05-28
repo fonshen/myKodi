@@ -1,0 +1,10 @@
+Changelog - Cleanup and simplifications
+
+- Replaced blocking MessageBox and Console.WriteLine calls with Debug.WriteLine or removed them.
+- Removed verbose Debug.WriteLine logs from many ViewModels and Views to reduce noise.
+- Made thumbnail and duration loading asynchronous to improve startup performance.
+- Unified and simplified card/item styles in Themes\LargeButtonTheme.xaml; removed unused LargeListBoxItemStyle.
+- Fixed focus/selection issues and card focus visual inconsistencies.
+- Adjusted card sizing logic to correctly compute width taking margins and borders into account.
+- Added ffmpeg-based fallback duration parsing when LibVLC fails, and background duration extraction.
+- Removed redundant or unused debug outputs in RemoteControlService and other services.
