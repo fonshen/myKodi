@@ -9,6 +9,9 @@ namespace SimpleVideoPlayer.Views;
 
 public partial class VideoPlayerView : UserControl
 {
+    private static readonly TimeSpan DefaultAutoHideDelay = TimeSpan.FromSeconds(5);
+    private static readonly TimeSpan SeekFeedbackAutoHideDelay = TimeSpan.FromSeconds(3);
+
     private VideoPlayerViewModel? ViewModel => DataContext as VideoPlayerViewModel;
     private bool _controlsVisible = true;
     private System.Windows.Threading.DispatcherTimer? _hideControlsTimer;
@@ -24,7 +27,7 @@ public partial class VideoPlayerView : UserControl
     {
         _hideControlsTimer = new System.Windows.Threading.DispatcherTimer
         {
-            Interval = TimeSpan.FromSeconds(5)
+            Interval = DefaultAutoHideDelay
         };
         _hideControlsTimer.Tick += (s, e) =>
         {
@@ -38,8 +41,9 @@ public partial class VideoPlayerView : UserControl
     private void UserControl_Loaded(object sender, RoutedEventArgs e)
     {
         AttachMediaPlayer();
+        ControlsPopup.IsOpen = true;
         ShowControls();
-        _hideControlsTimer?.Start();
+        ResetHideControlsTimer();
     }
 
     private void AttachMediaPlayer()
@@ -75,7 +79,6 @@ public partial class VideoPlayerView : UserControl
             ViewModel.ShowControls = true;
         }
 
-        ControlsOverlay.Visibility = Visibility.Visible;
         _controlsVisible = true;
         UpdatePlayPauseButton();
     }
@@ -84,7 +87,6 @@ public partial class VideoPlayerView : UserControl
     {
         if (ViewModel?.IsPlaying == true)
         {
-            ControlsOverlay.Visibility = Visibility.Collapsed;
             ViewModel.ShowControls = false;
             _controlsVisible = false;
         }
@@ -100,7 +102,11 @@ public partial class VideoPlayerView : UserControl
 
     private void UpdatePlayPauseButton()
     {
-        PlayPauseButton.Content = new TextBlock { Text = "||", FontSize = 64 };
+        PlayPauseButton.Content = new TextBlock
+        {
+            Text = ViewModel?.IsPlaying == true ? "||" : "▶",
+            FontSize = 64
+        };
     }
 
     private void PlayPauseButton_Click(object sender, RoutedEventArgs e)
@@ -126,9 +132,9 @@ public partial class VideoPlayerView : UserControl
     private void ResetHideControlsTimer(TimeSpan? delay = null)
     {
         _hideControlsTimer?.Stop();
-        if (delay.HasValue && _hideControlsTimer != null)
+        if (_hideControlsTimer != null)
         {
-            _hideControlsTimer.Interval = delay.Value;
+            _hideControlsTimer.Interval = delay ?? DefaultAutoHideDelay;
         }
 
         if (ViewModel?.IsPlaying == true)
@@ -184,7 +190,7 @@ public partial class VideoPlayerView : UserControl
         Dispatcher.BeginInvoke(() =>
         {
             ShowControls();
-            ResetHideControlsTimer(TimeSpan.FromSeconds(1));
+            ResetHideControlsTimer(SeekFeedbackAutoHideDelay);
         });
     }
 

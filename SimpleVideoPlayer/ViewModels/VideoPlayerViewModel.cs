@@ -1,3 +1,4 @@
+using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LibVLCSharp.Shared;
@@ -70,38 +71,94 @@ public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
 
         _mediaPlayer.Playing += (s, e) =>
         {
-            IsPlaying = true;
-            Duration = TimeSpan.FromMilliseconds(_mediaPlayer.Length);
-            UpdatePositionText();
+            RunOnUi(() =>
+            {
+                IsPlaying = true;
+                UpdatePlaybackPositionFromPlayer();
+            });
         };
 
         _mediaPlayer.Paused += (s, e) =>
         {
-            IsPlaying = false;
+            RunOnUi(() =>
+            {
+                IsPlaying = false;
+                UpdatePlaybackPositionFromPlayer();
+                ShowControls = true;
+            });
         };
 
         _mediaPlayer.Stopped += (s, e) =>
         {
-            IsPlaying = false;
+            RunOnUi(() =>
+            {
+                IsPlaying = false;
+            });
         };
 
         _mediaPlayer.EndReached += (s, e) =>
         {
-            IsPlaying = false;
-            OnPlaybackEnded?.Invoke();
+            RunOnUi(() =>
+            {
+                IsPlaying = false;
+                OnPlaybackEnded?.Invoke();
+            });
         };
 
         _mediaPlayer.PositionChanged += (s, e) =>
         {
-            if (_mediaPlayer.IsPlaying)
-            {
-                CurrentPosition = TimeSpan.FromMilliseconds(_mediaPlayer.Time);
-                Progress = e.Position * 100;
-                UpdatePositionText();
-            }
+            RunOnUi(() => UpdatePlaybackPositionFromPlayer(e.Position));
         };
 
         SetupRemoteCallbacks();
+    }
+
+    private static void RunOnUi(Action action)
+    {
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher == null || dispatcher.CheckAccess())
+        {
+            action();
+        }
+        else
+        {
+            dispatcher.BeginInvoke(action);
+        }
+    }
+
+    private void UpdatePlaybackPositionFromPlayer(float? reportedPosition = null)
+    {
+        if (_mediaPlayer == null)
+        {
+            return;
+        }
+
+        UpdatePlaybackPosition(_mediaPlayer.Time, _mediaPlayer.Length, reportedPosition);
+    }
+
+    private void UpdatePlaybackPosition(long playerTime, long playerLength, float? reportedPosition = null)
+    {
+        var length = Math.Max(0, playerLength);
+        var time = Math.Max(0, playerTime);
+
+        if (length > 0)
+        {
+            time = Math.Min(time, length);
+        }
+
+        CurrentPosition = TimeSpan.FromMilliseconds(time);
+        Duration = TimeSpan.FromMilliseconds(length);
+
+        if (length > 0)
+        {
+            Progress = Math.Max(0, Math.Min(100, (reportedPosition ?? (float)((double)time / length)) * 100));
+        }
+        else
+        {
+            Progress = 0;
+        }
+
+        UpdatePositionText();
     }
 
     private void UpdatePositionText()
@@ -177,9 +234,18 @@ public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
     {
         if (_mediaPlayer == null) return;
 
-        var newTime = _mediaPlayer.Time + (seconds * 1000);
-        newTime = Math.Max(0, Math.Min(newTime, _mediaPlayer.Length));
+        var length = Math.Max(0, _mediaPlayer.Length);
+        var currentTime = Math.Max(0, _mediaPlayer.Time);
+        var newTime = currentTime + (seconds * 1000L);
+
+        if (length > 0)
+        {
+            newTime = Math.Min(newTime, length);
+        }
+
+        newTime = Math.Max(0, newTime);
         _mediaPlayer.Time = newTime;
+        UpdatePlaybackPosition(newTime, length);
         ShowControls = true;
         OnSeekFeedbackRequested?.Invoke();
     }
