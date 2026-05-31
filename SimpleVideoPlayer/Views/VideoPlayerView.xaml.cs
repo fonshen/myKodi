@@ -146,8 +146,9 @@ public partial class VideoPlayerView : UserControl
     {
         PlayPauseButton.Content = new TextBlock
         {
-            Text = ViewModel?.IsPlaying == true ? "||" : "▶",
-            FontSize = 64
+            Text = ViewModel?.IsPlaying == true ? "⏸" : "▶",
+            FontSize = ViewModel?.IsPlaying == true ? 54 : 58,
+            Foreground = Brushes.White
         };
     }
 
