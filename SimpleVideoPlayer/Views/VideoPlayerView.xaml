@@ -69,7 +69,7 @@
             <Border x:Name="ControlsPanel"
                     Padding="26,20"
                     Background="#E6000000"
-                    CornerRadius="14"
+                    CornerRadius="0"
                     IsHitTestVisible="True"
                     MouseLeftButtonDown="ClickCapture_MouseLeftButtonDown"
                     MouseRightButtonDown="ClickCapture_MouseRightButtonDown">
@@ -87,7 +87,7 @@
                             Margin="0,-8,0,18"
                             Click="PlayPauseButton_Click">
                         <Button.Content>
-                            <TextBlock Text="⏸" FontSize="54" Foreground="White"/>
+                            <TextBlock Text="Ⅱ" FontSize="54" Foreground="White"/>
                         </Button.Content>
                     </Button>
 

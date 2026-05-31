@@ -54,6 +54,13 @@ public partial class MainViewModel : ViewModelBase
         {
             RunOnUi(() =>
             {
+                var nextVideo = FolderBrowserVM.SelectNextVideoAfter(PlayerVM.CurrentVideo);
+                if (nextVideo != null)
+                {
+                    PlayerVM.LoadVideo(nextVideo);
+                    return;
+                }
+
                 NavigateTo(FolderBrowserVM);
                 System.Windows.Application.Current?.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Input, new Action(() =>
                 {

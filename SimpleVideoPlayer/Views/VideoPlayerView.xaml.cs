@@ -72,7 +72,7 @@ public partial class VideoPlayerView : UserControl
 
     private void UpdateControlsPopupLayout()
     {
-        const double horizontalMargin = 30;
+        const double horizontalMargin = 0;
         const double bottomMargin = 35;
 
         var videoWidth = Math.Max(0, VideoGrid.ActualWidth);
@@ -146,7 +146,7 @@ public partial class VideoPlayerView : UserControl
     {
         PlayPauseButton.Content = new TextBlock
         {
-            Text = ViewModel?.IsPlaying == true ? "⏸" : "▶",
+            Text = ViewModel?.IsPlaying == true ? "Ⅱ" : "▶",
             FontSize = ViewModel?.IsPlaying == true ? 54 : 58,
             Foreground = Brushes.White
         };
@@ -160,16 +160,6 @@ public partial class VideoPlayerView : UserControl
         {
             HideControls();
         }
-    }
-
-    private void FastForwardButton_Click(object sender, RoutedEventArgs e)
-    {
-        ViewModel?.SeekRelative(30);
-    }
-
-    private void RewindButton_Click(object sender, RoutedEventArgs e)
-    {
-        ViewModel?.SeekRelative(-30);
     }
 
     private void ResetHideControlsTimer(TimeSpan? delay = null)

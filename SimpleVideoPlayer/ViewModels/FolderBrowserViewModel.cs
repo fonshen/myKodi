@@ -256,6 +256,40 @@ public partial class FolderBrowserViewModel : ViewModelBase
         catch { }
     }
 
+    public VideoFile? SelectNextVideoAfter(VideoFile? currentVideo)
+    {
+        if (currentVideo == null || Items.Count == 0)
+        {
+            return null;
+        }
+
+        var currentIndex = Items.ToList().FindIndex(i => i.Video == currentVideo);
+        if (currentIndex < 0)
+        {
+            currentIndex = SelectedIndex;
+        }
+
+        for (var index = currentIndex + 1; index < Items.Count; index++)
+        {
+            var nextVideo = Items[index].Video;
+            if (Items[index].Type == ItemType.Video && nextVideo != null)
+            {
+                _lastSelectedVideo = nextVideo;
+                SelectedIndex = index;
+                SetFocusOnCategories(false);
+                return nextVideo;
+            }
+        }
+
+        _lastSelectedVideo = currentVideo;
+        if (currentIndex >= 0 && currentIndex < Items.Count)
+        {
+            SelectedIndex = currentIndex;
+        }
+
+        return null;
+    }
+
     private void LoadCategoryVideos()
     {
         Items.Clear();
