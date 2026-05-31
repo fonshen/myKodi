@@ -87,7 +87,17 @@
                             Margin="0,-8,0,18"
                             Click="PlayPauseButton_Click">
                         <Button.Content>
-                            <TextBlock Text="Ⅱ" FontSize="54" Foreground="White"/>
+                            <Grid Width="42" Height="50">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="14"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="14"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Column="1" Background="White" CornerRadius="2"/>
+                                <Border Grid.Column="3" Background="White" CornerRadius="2"/>
+                            </Grid>
                         </Button.Content>
                     </Button>
 

@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Shapes;
 using SimpleVideoPlayer.ViewModels;
 
 namespace SimpleVideoPlayer.Views;
@@ -144,11 +145,54 @@ public partial class VideoPlayerView : UserControl
 
     private void UpdatePlayPauseButton()
     {
-        PlayPauseButton.Content = new TextBlock
+        PlayPauseButton.Content = ViewModel?.IsPlaying == true
+            ? CreatePauseIcon()
+            : CreatePlayIcon();
+    }
+
+    private static UIElement CreatePauseIcon()
+    {
+        var icon = new Grid
         {
-            Text = ViewModel?.IsPlaying == true ? "Ⅱ" : "▶",
-            FontSize = ViewModel?.IsPlaying == true ? 54 : 58,
-            Foreground = Brushes.White
+            Width = 42,
+            Height = 50
+        };
+
+        icon.ColumnDefinitions.Add(new ColumnDefinition());
+        icon.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(14) });
+        icon.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(10) });
+        icon.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(14) });
+        icon.ColumnDefinitions.Add(new ColumnDefinition());
+
+        var leftBar = new Border
+        {
+            Background = Brushes.White,
+            CornerRadius = new CornerRadius(2)
+        };
+        Grid.SetColumn(leftBar, 1);
+
+        var rightBar = new Border
+        {
+            Background = Brushes.White,
+            CornerRadius = new CornerRadius(2)
+        };
+        Grid.SetColumn(rightBar, 3);
+
+        icon.Children.Add(leftBar);
+        icon.Children.Add(rightBar);
+        return icon;
+    }
+
+    private static UIElement CreatePlayIcon()
+    {
+        return new Path
+        {
+            Width = 48,
+            Height = 54,
+            Stretch = Stretch.Uniform,
+            Fill = Brushes.White,
+            Margin = new Thickness(5, 0, 0, 0),
+            Data = Geometry.Parse("M 0 0 L 0 54 L 46 27 Z")
         };
     }
 
