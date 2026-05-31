@@ -90,9 +90,16 @@ public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
             {
                 var shouldShowControls = _showControlsOnNextPause && !_isStartingPlayback;
                 _showControlsOnNextPause = false;
-                IsPlaying = false;
                 UpdatePlaybackPositionFromPlayer();
-                ShowControls = shouldShowControls;
+
+                if (!shouldShowControls)
+                {
+                    ShowControls = false;
+                    return;
+                }
+
+                IsPlaying = false;
+                ShowControls = true;
             });
         };
 
@@ -108,7 +115,15 @@ public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
         {
             RunOnUi(() =>
             {
+                if (_isStartingPlayback)
+                {
+                    IsPlaying = false;
+                    ShowControls = false;
+                    return;
+                }
+
                 _isStartingPlayback = false;
+                _showControlsOnNextPause = false;
                 IsPlaying = false;
                 OnPlaybackEnded?.Invoke();
             });
