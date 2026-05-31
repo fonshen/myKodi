@@ -15,6 +15,8 @@ public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
 
     private LibVLC? _libVLC;
     private MediaPlayer? _mediaPlayer;
+    private bool _isStartingPlayback;
+    private bool _showControlsOnNextPause;
     private bool _disposed;
 
     public event Action? OnPlaybackEnded;
@@ -74,6 +76,8 @@ public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
         {
             RunOnUi(() =>
             {
+                _isStartingPlayback = false;
+                _showControlsOnNextPause = false;
                 IsPlaying = true;
                 UpdatePlaybackPositionFromPlayer();
                 ShowControls = false;
@@ -84,9 +88,11 @@ public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
         {
             RunOnUi(() =>
             {
+                var shouldShowControls = _showControlsOnNextPause && !_isStartingPlayback;
+                _showControlsOnNextPause = false;
                 IsPlaying = false;
                 UpdatePlaybackPositionFromPlayer();
-                ShowControls = true;
+                ShowControls = shouldShowControls;
             });
         };
 
@@ -102,6 +108,7 @@ public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
         {
             RunOnUi(() =>
             {
+                _isStartingPlayback = false;
                 IsPlaying = false;
                 OnPlaybackEnded?.Invoke();
             });
@@ -197,6 +204,8 @@ public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
         Duration = TimeSpan.Zero;
         Progress = 0;
         PositionText = "00:00 / 00:00";
+        _isStartingPlayback = true;
+        _showControlsOnNextPause = false;
         ShowControls = false;
 
         if (_mediaPlayer != null && !string.IsNullOrEmpty(video.FilePath))
@@ -230,6 +239,8 @@ public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
 
         if (_mediaPlayer.IsPlaying)
         {
+            _isStartingPlayback = false;
+            _showControlsOnNextPause = true;
             _mediaPlayer.Pause();
             IsPlaying = false;
             UpdatePlaybackPositionFromPlayer();
@@ -237,6 +248,8 @@ public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
         }
         else
         {
+            _isStartingPlayback = false;
+            _showControlsOnNextPause = false;
             _mediaPlayer.Play();
             IsPlaying = true;
             ShowControls = false;
@@ -247,6 +260,7 @@ public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
     {
         if (_mediaPlayer == null) return;
 
+        _isStartingPlayback = false;
         var length = Math.Max(0, _mediaPlayer.Length);
         var currentTime = Math.Max(0, _mediaPlayer.Time);
         var newTime = currentTime + (seconds * 1000L);

@@ -42,7 +42,13 @@ public partial class VideoPlayerView : UserControl
     private void UserControl_Loaded(object sender, RoutedEventArgs e)
     {
         AttachMediaPlayer();
-        _controlsVisible = ViewModel?.ShowControls == true;
+        if (ViewModel != null)
+        {
+            ViewModel.ShowControls = false;
+        }
+
+        ControlsPopup.IsOpen = false;
+        _controlsVisible = false;
         UpdateControlsPopupLayout();
         ResetHideControlsTimer();
     }
