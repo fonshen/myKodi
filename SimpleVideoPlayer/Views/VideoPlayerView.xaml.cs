@@ -42,7 +42,7 @@ public partial class VideoPlayerView : UserControl
     {
         AttachMediaPlayer();
         _controlsVisible = ViewModel?.ShowControls == true;
-        UpdatePopupSize();
+        UpdateControlsPopupLayout();
         ResetHideControlsTimer();
     }
 
@@ -61,29 +61,40 @@ public partial class VideoPlayerView : UserControl
 
     private void EnsureControlsPopupOpen()
     {
-        UpdatePopupSize();
+        UpdateControlsPopupLayout();
         if (!ControlsPopup.IsOpen)
         {
             ControlsPopup.IsOpen = true;
         }
+
+        Dispatcher.BeginInvoke(new Action(UpdateControlsPopupLayout), System.Windows.Threading.DispatcherPriority.Loaded);
     }
 
-    private void UpdatePopupSize()
+    private void UpdateControlsPopupLayout()
     {
-        if (VideoGrid.ActualWidth > 0)
-        {
-            PopupRoot.Width = VideoGrid.ActualWidth;
-        }
+        const double horizontalMargin = 30;
+        const double bottomMargin = 35;
 
-        if (VideoGrid.ActualHeight > 0)
-        {
-            PopupRoot.Height = VideoGrid.ActualHeight;
-        }
+        var videoWidth = Math.Max(0, VideoGrid.ActualWidth);
+        var videoHeight = Math.Max(0, VideoGrid.ActualHeight);
+
+        var panelWidth = videoWidth > horizontalMargin * 2
+            ? videoWidth - (horizontalMargin * 2)
+            : 800;
+        ControlsPanel.Width = panelWidth;
+
+        ControlsPanel.Measure(new Size(panelWidth, double.PositiveInfinity));
+        var panelHeight = ControlsPanel.ActualHeight > 0
+            ? ControlsPanel.ActualHeight
+            : ControlsPanel.DesiredSize.Height;
+
+        ControlsPopup.HorizontalOffset = horizontalMargin;
+        ControlsPopup.VerticalOffset = Math.Max(0, videoHeight - panelHeight - bottomMargin);
     }
 
     private void VideoGrid_SizeChanged(object sender, SizeChangedEventArgs e)
     {
-        UpdatePopupSize();
+        UpdateControlsPopupLayout();
     }
 
     private void UserControl_Unloaded(object sender, RoutedEventArgs e)
@@ -101,14 +112,16 @@ public partial class VideoPlayerView : UserControl
 
     private void ShowControls()
     {
+        _controlsVisible = true;
+        UpdatePlayPauseButton();
+        UpdateControlsPopupLayout();
+
         if (ViewModel != null)
         {
             ViewModel.ShowControls = true;
         }
 
-        _controlsVisible = true;
         EnsureControlsPopupOpen();
-        UpdatePlayPauseButton();
     }
 
     private void HideControls()
@@ -116,6 +129,7 @@ public partial class VideoPlayerView : UserControl
         if (ViewModel?.IsPlaying == true)
         {
             ViewModel.ShowControls = false;
+            ControlsPopup.IsOpen = false;
             _controlsVisible = false;
         }
     }
@@ -257,6 +271,10 @@ public partial class VideoPlayerView : UserControl
                 if (_controlsVisible)
                 {
                     EnsureControlsPopupOpen();
+                }
+                else
+                {
+                    ControlsPopup.IsOpen = false;
                 }
             });
         }

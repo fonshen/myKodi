@@ -23,113 +23,104 @@
         <Popup x:Name="ControlsPopup"
                PlacementTarget="{Binding ElementName=VideoGrid}"
                Placement="Relative"
-               IsOpen="{Binding ShowControls, Mode=TwoWay}"
                AllowsTransparency="True"
                StaysOpen="True"
                Focusable="False"
                DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
-            <Grid x:Name="PopupRoot"
-                  Width="{Binding ActualWidth, ElementName=VideoGrid}"
-                  Height="{Binding ActualHeight, ElementName=VideoGrid}"
-                  Background="Transparent"
-                  MouseLeftButtonDown="ClickCapture_MouseLeftButtonDown"
-                  MouseRightButtonDown="ClickCapture_MouseRightButtonDown">
-                <Border x:Name="ControlsPanel"
-                        VerticalAlignment="Bottom"
-                        Margin="30,0,30,35"
-                        Padding="26,20"
-                        Background="#E6000000"
-                        CornerRadius="14"
-                        IsHitTestVisible="True">
-                    <Grid>
+            <Border x:Name="ControlsPanel"
+                    Padding="26,20"
+                    Background="#E6000000"
+                    CornerRadius="14"
+                    IsHitTestVisible="True"
+                    MouseLeftButtonDown="ClickCapture_MouseLeftButtonDown"
+                    MouseRightButtonDown="ClickCapture_MouseRightButtonDown">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0" Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Button Grid.Column="0"
+                                Content="返回"
+                                Style="{StaticResource LargeButtonStyle}"
+                                Command="{Binding StopAndGoBackCommand}"
+                                FontSize="24"
+                                Padding="20,12"/>
+
+                        <TextBlock Grid.Column="1"
+                                   Text="{Binding VideoTitle}"
+                                   Style="{StaticResource LargeTextBlockStyle}"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   TextTrimming="CharacterEllipsis"
+                                   Margin="20,0"/>
+
+                        <TextBlock Grid.Column="2"
+                                   Text="播放器音量 100%"
+                                   Foreground="White"
+                                   FontSize="24"
+                                   VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <StackPanel Grid.Row="1"
+                                HorizontalAlignment="Center"
+                                Orientation="Horizontal"
+                                Margin="0,0,0,18">
+                        <Button Content="&lt;&lt;"
+                                Style="{StaticResource LargeButtonStyle}"
+                                FontSize="46"
+                                Width="100" Height="90"
+                                Click="RewindButton_Click"/>
+
+                        <Button x:Name="PlayPauseButton"
+                                Style="{StaticResource LargeButtonStyle}"
+                                FontSize="56"
+                                Width="140" Height="100"
+                                Margin="40,0"
+                                Click="PlayPauseButton_Click">
+                            <Button.Content>
+                                <TextBlock Text="||" FontSize="60"/>
+                            </Button.Content>
+                        </Button>
+
+                        <Button Content="&gt;&gt;"
+                                Style="{StaticResource LargeButtonStyle}"
+                                FontSize="46"
+                                Width="100" Height="90"
+                                Click="FastForwardButton_Click"/>
+                    </StackPanel>
+
+                    <Grid Grid.Row="2">
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <Grid Grid.Row="0" Margin="0,0,0,16">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Row="0"
+                                   Text="{Binding PositionText}"
+                                   Foreground="White"
+                                   FontSize="30"
+                                   FontWeight="SemiBold"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,12"/>
 
-                            <Button Grid.Column="0"
-                                    Content="返回"
-                                    Style="{StaticResource LargeButtonStyle}"
-                                    Command="{Binding StopAndGoBackCommand}"
-                                    FontSize="24"
-                                    Padding="20,12"/>
-
-                            <TextBlock Grid.Column="1"
-                                       Text="{Binding VideoTitle}"
-                                       Style="{StaticResource LargeTextBlockStyle}"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"
-                                       TextTrimming="CharacterEllipsis"
-                                       Margin="20,0"/>
-
-                            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                                <TextBlock Text="播放器音量 100%"
-                                           Foreground="White"
-                                           FontSize="24"
-                                           VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </Grid>
-
-                        <StackPanel Grid.Row="1"
-                                    HorizontalAlignment="Center"
-                                    Orientation="Horizontal"
-                                    Margin="0,0,0,18">
-                            <Button Content="&lt;&lt;"
-                                    Style="{StaticResource LargeButtonStyle}"
-                                    FontSize="46"
-                                    Width="100" Height="90"
-                                    Click="RewindButton_Click"/>
-
-                            <Button x:Name="PlayPauseButton"
-                                    Style="{StaticResource LargeButtonStyle}"
-                                    FontSize="56"
-                                    Width="140" Height="100"
-                                    Margin="40,0"
-                                    Click="PlayPauseButton_Click">
-                                <Button.Content>
-                                    <TextBlock Text="||" FontSize="60"/>
-                                </Button.Content>
-                            </Button>
-
-                            <Button Content="&gt;&gt;"
-                                    Style="{StaticResource LargeButtonStyle}"
-                                    FontSize="46"
-                                    Width="100" Height="90"
-                                    Click="FastForwardButton_Click"/>
-                        </StackPanel>
-
-                        <Grid Grid.Row="2">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-
-                            <TextBlock Grid.Row="0"
-                                       Text="{Binding PositionText}"
-                                       Foreground="White"
-                                       FontSize="30"
-                                       FontWeight="SemiBold"
-                                       HorizontalAlignment="Center"
-                                       Margin="0,0,0,12"/>
-
-                            <ProgressBar Grid.Row="1"
-                                         Value="{Binding Progress}"
-                                         Maximum="100"
-                                         Height="18"
-                                         Background="#404040"
-                                         Foreground="{StaticResource AccentColor}"/>
-                        </Grid>
+                        <ProgressBar Grid.Row="1"
+                                     Value="{Binding Progress}"
+                                     Maximum="100"
+                                     Height="18"
+                                     Background="#404040"
+                                     Foreground="{StaticResource AccentColor}"/>
                     </Grid>
-                </Border>
-            </Grid>
+                </Grid>
+            </Border>
         </Popup>
     </Grid>
 </UserControl>
