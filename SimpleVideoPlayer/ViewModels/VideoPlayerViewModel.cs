@@ -11,6 +11,8 @@ public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
 {
     private readonly RemoteControlService _remoteService;
     private readonly SettingsService _settingsService;
+    private const int FixedPlayerVolume = 100;
+
     private LibVLC? _libVLC;
     private MediaPlayer? _mediaPlayer;
     private bool _disposed;
@@ -41,10 +43,13 @@ public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
     private bool _isPlaying;
 
     [ObservableProperty]
-    private bool _showControls = true;
+    private bool _showControls;
 
     [ObservableProperty]
-    private double _volume = 100;
+    private bool _showProgressBar;
+
+    [ObservableProperty]
+    private double _volume = FixedPlayerVolume;
 
     [ObservableProperty]
     private bool _isMuted;
@@ -66,8 +71,7 @@ public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
         _libVLC = new LibVLC();
         _mediaPlayer = new MediaPlayer(_libVLC);
 
-        _mediaPlayer.Volume = (int)(_settingsService.Settings.Volume * 100);
-        Volume = _mediaPlayer.Volume;
+        SetFixedPlayerVolume();
 
         _mediaPlayer.Playing += (s, e) =>
         {
@@ -84,7 +88,8 @@ public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
             {
                 IsPlaying = false;
                 UpdatePlaybackPositionFromPlayer();
-                ShowControls = true;
+                ShowControls = false;
+                ShowProgressBar = true;
             });
         };
 
@@ -111,6 +116,19 @@ public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
         };
 
         SetupRemoteCallbacks();
+    }
+
+    private void SetFixedPlayerVolume()
+    {
+        if (_mediaPlayer == null)
+        {
+            return;
+        }
+
+        _mediaPlayer.Mute = false;
+        _mediaPlayer.Volume = FixedPlayerVolume;
+        IsMuted = false;
+        Volume = FixedPlayerVolume;
     }
 
     private static void RunOnUi(Action action)
@@ -183,6 +201,7 @@ public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
         Progress = 0;
         PositionText = "00:00 / 00:00";
         ShowControls = false;
+        ShowProgressBar = false;
 
         if (_mediaPlayer != null && !string.IsNullOrEmpty(video.FilePath))
         {
@@ -204,9 +223,6 @@ public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
             onBack: () => { System.Diagnostics.Debug.WriteLine("VideoPlayerViewModel: Back - StopAndGoBack"); StopAndGoBack(); },
             onPlayPause: () => { TogglePlayPause(); },
             onStop: () => { StopAndGoBack(); },
-            onVolumeUp: () => { AdjustVolume(10); },
-            onVolumeDown: () => { AdjustVolume(-10); },
-            onMute: () => { ToggleMute(); },
             onFastForward: () => { SeekRelative(_settingsService.Settings.FastForwardSeconds); },
             onRewind: () => { SeekRelative(-_settingsService.Settings.FastForwardSeconds); }
         );
@@ -220,13 +236,16 @@ public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
         {
             _mediaPlayer.Pause();
             IsPlaying = false;
-            ShowControls = true;
+            UpdatePlaybackPositionFromPlayer();
+            ShowControls = false;
+            ShowProgressBar = true;
         }
         else
         {
             _mediaPlayer.Play();
             IsPlaying = true;
             ShowControls = false;
+            ShowProgressBar = false;
         }
     }
 
@@ -246,27 +265,19 @@ public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
         newTime = Math.Max(0, newTime);
         _mediaPlayer.Time = newTime;
         UpdatePlaybackPosition(newTime, length);
-        ShowControls = true;
+        ShowControls = false;
+        ShowProgressBar = true;
         OnSeekFeedbackRequested?.Invoke();
     }
 
     private void AdjustVolume(int delta)
     {
-        if (_mediaPlayer == null) return;
-
-        var newVolume = _mediaPlayer.Volume + delta;
-        newVolume = Math.Max(0, Math.Min(200, newVolume));
-        _mediaPlayer.Volume = newVolume;
-        Volume = newVolume;
-        _settingsService.UpdateSettings(s => s.Volume = newVolume / 100.0);
+        SetFixedPlayerVolume();
     }
 
     private void ToggleMute()
     {
-        if (_mediaPlayer == null) return;
-
-        IsMuted = !IsMuted;
-        _mediaPlayer.Mute = IsMuted;
+        SetFixedPlayerVolume();
     }
 
     [RelayCommand]
@@ -283,10 +294,7 @@ public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
     public override void OnNavigatedTo()
     {
         SetupRemoteCallbacks();
-        if (_mediaPlayer != null)
-        {
-            _mediaPlayer.Volume = (int)(_settingsService.Settings.Volume * 100);
-        }
+        SetFixedPlayerVolume();
     }
 
     public override void OnNavigatedFrom()

@@ -28,6 +28,32 @@ public class BoolToVisibilityConverter : IValueConverter
     }
 }
 
+
+public class BoolToOpacityConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is bool boolValue)
+        {
+            bool invert = parameter?.ToString() == "Invert";
+            return (boolValue != invert) ? 1.0 : 0.0;
+        }
+
+        return 0.0;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is double opacity)
+        {
+            bool invert = parameter?.ToString() == "Invert";
+            return (opacity > 0.0) != invert;
+        }
+
+        return false;
+    }
+}
+
 public class PathToImageConverter : IValueConverter
 {
     public object? Convert(object value, Type targetType, object parameter, CultureInfo culture)

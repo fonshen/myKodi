@@ -97,6 +97,11 @@ public class RemoteControlService
 
     private void ProcessKeyDown(Key key, KeyEventArgs e)
     {
+        if (IsSystemVolumeKey(key))
+        {
+            return;
+        }
+
         if (_pressedKeys.Contains(key))
         {
             return;
@@ -120,6 +125,11 @@ public class RemoteControlService
 
     private void ProcessKeyUp(Key key)
     {
+        if (IsSystemVolumeKey(key))
+        {
+            return;
+        }
+
         _pressedKeys.Remove(key);
         _keyRepeatTimer.Stop();
 
@@ -137,6 +147,11 @@ public class RemoteControlService
             _isProcessing = true;
             ExecuteKeyAction(_currentKey);
         }
+    }
+
+    private static bool IsSystemVolumeKey(Key key)
+    {
+        return key is Key.VolumeUp or Key.VolumeDown or Key.VolumeMute;
     }
 
     private void ExecuteKeyAction(Key key)

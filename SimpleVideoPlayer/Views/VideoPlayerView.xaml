@@ -13,6 +13,7 @@
 
     <UserControl.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibility"/>
+        <converters:BoolToOpacityConverter x:Key="BoolToOpacity"/>
     </UserControl.Resources>
 
     <Grid x:Name="VideoGrid">
@@ -33,9 +34,9 @@
                   Height="{Binding ActualHeight, ElementName=VideoGrid}">
                 <Grid x:Name="ControlsOverlay"
                       Background="#80000000"
-                      Visibility="{Binding ShowControls, Converter={StaticResource BoolToVisibility}}"
+                      Opacity="{Binding ShowControls, Converter={StaticResource BoolToOpacity}}"
                       Panel.ZIndex="100"
-                      IsHitTestVisible="True"
+                      IsHitTestVisible="{Binding ShowControls}"
                       MouseLeftButtonDown="ClickCapture_MouseLeftButtonDown"
                       MouseRightButtonDown="ClickCapture_MouseRightButtonDown">
 
@@ -133,6 +134,38 @@
                         </Grid>
                     </Border>
                 </Grid>
+
+                <Border x:Name="ProgressFeedbackOverlay"
+                        VerticalAlignment="Bottom"
+                        Margin="30,0,30,35"
+                        Padding="24,16"
+                        Background="#CC000000"
+                        CornerRadius="12"
+                        Opacity="{Binding ShowProgressBar, Converter={StaticResource BoolToOpacity}}"
+                        IsHitTestVisible="False"
+                        Panel.ZIndex="101">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0"
+                                   Text="{Binding PositionText}"
+                                   Foreground="White"
+                                   FontSize="30"
+                                   FontWeight="SemiBold"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,12"/>
+
+                        <ProgressBar Grid.Row="1"
+                                     Value="{Binding Progress}"
+                                     Maximum="100"
+                                     Height="18"
+                                     Background="#404040"
+                                     Foreground="{StaticResource AccentColor}"/>
+                    </Grid>
+                </Border>
 
             </Grid>
         </Popup>

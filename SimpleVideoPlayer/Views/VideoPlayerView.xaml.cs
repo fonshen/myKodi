@@ -31,7 +31,7 @@ public partial class VideoPlayerView : UserControl
         };
         _hideControlsTimer.Tick += (s, e) =>
         {
-            if (_controlsVisible && ViewModel?.IsPlaying == true)
+            if (ViewModel?.IsPlaying == true && (_controlsVisible || ViewModel.ShowProgressBar))
             {
                 HideControls();
             }
@@ -42,7 +42,7 @@ public partial class VideoPlayerView : UserControl
     {
         AttachMediaPlayer();
         ControlsPopup.IsOpen = true;
-        ShowControls();
+        _controlsVisible = ViewModel?.ShowControls == true;
         ResetHideControlsTimer();
     }
 
@@ -77,6 +77,7 @@ public partial class VideoPlayerView : UserControl
         if (ViewModel != null)
         {
             ViewModel.ShowControls = true;
+            ViewModel.ShowProgressBar = false;
         }
 
         _controlsVisible = true;
@@ -88,6 +89,7 @@ public partial class VideoPlayerView : UserControl
         if (ViewModel?.IsPlaying == true)
         {
             ViewModel.ShowControls = false;
+            ViewModel.ShowProgressBar = false;
             _controlsVisible = false;
         }
     }
@@ -98,6 +100,17 @@ public partial class VideoPlayerView : UserControl
             HideControls();
         else
             ShowControls();
+    }
+
+    private void ShowProgressFeedback()
+    {
+        if (ViewModel != null)
+        {
+            ViewModel.ShowControls = false;
+            ViewModel.ShowProgressBar = true;
+        }
+
+        _controlsVisible = false;
     }
 
     private void UpdatePlayPauseButton()
@@ -189,7 +202,7 @@ public partial class VideoPlayerView : UserControl
     {
         Dispatcher.BeginInvoke(() =>
         {
-            ShowControls();
+            ShowProgressFeedback();
             ResetHideControlsTimer(SeekFeedbackAutoHideDelay);
         });
     }
