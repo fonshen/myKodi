@@ -46,9 +46,6 @@ public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
     private bool _showControls;
 
     [ObservableProperty]
-    private bool _showProgressBar;
-
-    [ObservableProperty]
     private double _volume = FixedPlayerVolume;
 
     [ObservableProperty]
@@ -80,7 +77,6 @@ public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
                 IsPlaying = true;
                 UpdatePlaybackPositionFromPlayer();
                 ShowControls = false;
-                ShowProgressBar = false;
             });
         };
 
@@ -91,7 +87,6 @@ public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
                 IsPlaying = false;
                 UpdatePlaybackPositionFromPlayer();
                 ShowControls = true;
-                ShowProgressBar = false;
             });
         };
 
@@ -203,7 +198,6 @@ public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
         Progress = 0;
         PositionText = "00:00 / 00:00";
         ShowControls = false;
-        ShowProgressBar = false;
 
         if (_mediaPlayer != null && !string.IsNullOrEmpty(video.FilePath))
         {
@@ -240,14 +234,12 @@ public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
             IsPlaying = false;
             UpdatePlaybackPositionFromPlayer();
             ShowControls = true;
-            ShowProgressBar = false;
         }
         else
         {
             _mediaPlayer.Play();
             IsPlaying = true;
             ShowControls = false;
-            ShowProgressBar = false;
         }
     }
 
@@ -268,7 +260,6 @@ public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
         _mediaPlayer.Time = newTime;
         UpdatePlaybackPosition(newTime, length);
         ShowControls = true;
-        ShowProgressBar = false;
         OnSeekFeedbackRequested?.Invoke();
     }
 

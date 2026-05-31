@@ -4,17 +4,11 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:vlc="clr-namespace:LibVLCSharp.WPF;assembly=LibVLCSharp.WPF"
-             xmlns:converters="clr-namespace:SimpleVideoPlayer.Converters"
              mc:Ignorable="d"
              d:DesignHeight="1080" d:DesignWidth="1920"
              Background="Black"
              Loaded="UserControl_Loaded"
              Unloaded="UserControl_Unloaded">
-
-    <UserControl.Resources>
-        <converters:BoolToVisibilityConverter x:Key="BoolToVisibility"/>
-        <converters:BoolToOpacityConverter x:Key="BoolToOpacity"/>
-    </UserControl.Resources>
 
     <Grid x:Name="VideoGrid"
           SizeChanged="VideoGrid_SizeChanged"
@@ -29,29 +23,32 @@
         <Popup x:Name="ControlsPopup"
                PlacementTarget="{Binding ElementName=VideoGrid}"
                Placement="Relative"
+               IsOpen="{Binding ShowControls, Mode=TwoWay}"
                AllowsTransparency="True"
                StaysOpen="True"
                Focusable="False"
                DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
             <Grid x:Name="PopupRoot"
                   Width="{Binding ActualWidth, ElementName=VideoGrid}"
-                  Height="{Binding ActualHeight, ElementName=VideoGrid}">
-                <Grid x:Name="ControlsOverlay"
-                      Background="#80000000"
-                      Opacity="{Binding ShowControls, Converter={StaticResource BoolToOpacity}}"
-                      Panel.ZIndex="100"
-                      IsHitTestVisible="{Binding ShowControls}"
-                      MouseLeftButtonDown="ClickCapture_MouseLeftButtonDown"
-                      MouseRightButtonDown="ClickCapture_MouseRightButtonDown">
+                  Height="{Binding ActualHeight, ElementName=VideoGrid}"
+                  Background="Transparent"
+                  MouseLeftButtonDown="ClickCapture_MouseLeftButtonDown"
+                  MouseRightButtonDown="ClickCapture_MouseRightButtonDown">
+                <Border x:Name="ControlsPanel"
+                        VerticalAlignment="Bottom"
+                        Margin="30,0,30,35"
+                        Padding="26,20"
+                        Background="#E6000000"
+                        CornerRadius="14"
+                        IsHitTestVisible="True">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
 
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-
-                    <Border Grid.Row="0" Background="#80000000" Padding="30,20">
-                        <Grid>
+                        <Grid Grid.Row="0" Margin="0,0,0,16">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
@@ -73,50 +70,43 @@
                                        TextTrimming="CharacterEllipsis"
                                        Margin="20,0"/>
 
-                            <StackPanel Grid.Column="2" Orientation="Horizontal">
-                                <TextBlock Text="{Binding Volume, StringFormat={}{0}%}"
-                                           Foreground="White"
-                                           FontSize="24"
-                                           VerticalAlignment="Center"
-                                           Margin="0,0,20,0"/>
-                                <TextBlock Text="音量"
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="播放器音量 100%"
                                            Foreground="White"
                                            FontSize="24"
                                            VerticalAlignment="Center"/>
                             </StackPanel>
                         </Grid>
-                    </Border>
 
-                    <StackPanel Grid.Row="1"
-                                VerticalAlignment="Center"
-                                HorizontalAlignment="Center"
-                                Orientation="Horizontal">
-                        <Button Content="&lt;&lt;"
-                                Style="{StaticResource LargeButtonStyle}"
-                                FontSize="48"
-                                Width="100" Height="100"
-                                Click="RewindButton_Click"/>
+                        <StackPanel Grid.Row="1"
+                                    HorizontalAlignment="Center"
+                                    Orientation="Horizontal"
+                                    Margin="0,0,0,18">
+                            <Button Content="&lt;&lt;"
+                                    Style="{StaticResource LargeButtonStyle}"
+                                    FontSize="46"
+                                    Width="100" Height="90"
+                                    Click="RewindButton_Click"/>
 
-                        <Button x:Name="PlayPauseButton"
-                                Style="{StaticResource LargeButtonStyle}"
-                                FontSize="60"
-                                Width="150" Height="150"
-                                Margin="40,0"
-                                Click="PlayPauseButton_Click">
-                            <Button.Content>
-                                <TextBlock Text="||" FontSize="64"/>
-                            </Button.Content>
-                        </Button>
+                            <Button x:Name="PlayPauseButton"
+                                    Style="{StaticResource LargeButtonStyle}"
+                                    FontSize="56"
+                                    Width="140" Height="100"
+                                    Margin="40,0"
+                                    Click="PlayPauseButton_Click">
+                                <Button.Content>
+                                    <TextBlock Text="||" FontSize="60"/>
+                                </Button.Content>
+                            </Button>
 
-                        <Button Content="&gt;&gt;"
-                                Style="{StaticResource LargeButtonStyle}"
-                                FontSize="48"
-                                Width="100" Height="100"
-                                Click="FastForwardButton_Click"/>
-                    </StackPanel>
+                            <Button Content="&gt;&gt;"
+                                    Style="{StaticResource LargeButtonStyle}"
+                                    FontSize="46"
+                                    Width="100" Height="90"
+                                    Click="FastForwardButton_Click"/>
+                        </StackPanel>
 
-                    <Border Grid.Row="2" Background="#80000000" Padding="30,20">
-                        <Grid>
+                        <Grid Grid.Row="2">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
@@ -125,52 +115,20 @@
                             <TextBlock Grid.Row="0"
                                        Text="{Binding PositionText}"
                                        Foreground="White"
-                                       FontSize="28"
+                                       FontSize="30"
+                                       FontWeight="SemiBold"
                                        HorizontalAlignment="Center"
-                                       Margin="0,0,0,10"/>
+                                       Margin="0,0,0,12"/>
 
                             <ProgressBar Grid.Row="1"
                                          Value="{Binding Progress}"
                                          Maximum="100"
-                                         Height="15"
+                                         Height="18"
                                          Background="#404040"
                                          Foreground="{StaticResource AccentColor}"/>
                         </Grid>
-                    </Border>
-                </Grid>
-
-                <Border x:Name="ProgressFeedbackOverlay"
-                        VerticalAlignment="Bottom"
-                        Margin="30,0,30,35"
-                        Padding="24,16"
-                        Background="#CC000000"
-                        CornerRadius="12"
-                        Opacity="{Binding ShowProgressBar, Converter={StaticResource BoolToOpacity}}"
-                        IsHitTestVisible="False"
-                        Panel.ZIndex="101">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-
-                        <TextBlock Grid.Row="0"
-                                   Text="{Binding PositionText}"
-                                   Foreground="White"
-                                   FontSize="30"
-                                   FontWeight="SemiBold"
-                                   HorizontalAlignment="Center"
-                                   Margin="0,0,0,12"/>
-
-                        <ProgressBar Grid.Row="1"
-                                     Value="{Binding Progress}"
-                                     Maximum="100"
-                                     Height="18"
-                                     Background="#404040"
-                                     Foreground="{StaticResource AccentColor}"/>
                     </Grid>
                 </Border>
-
             </Grid>
         </Popup>
     </Grid>

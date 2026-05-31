@@ -31,7 +31,7 @@ public partial class VideoPlayerView : UserControl
         };
         _hideControlsTimer.Tick += (s, e) =>
         {
-            if (ViewModel?.IsPlaying == true && (_controlsVisible || ViewModel.ShowProgressBar))
+            if (ViewModel?.IsPlaying == true && _controlsVisible)
             {
                 HideControls();
             }
@@ -104,7 +104,6 @@ public partial class VideoPlayerView : UserControl
         if (ViewModel != null)
         {
             ViewModel.ShowControls = true;
-            ViewModel.ShowProgressBar = false;
         }
 
         _controlsVisible = true;
@@ -117,7 +116,6 @@ public partial class VideoPlayerView : UserControl
         if (ViewModel?.IsPlaying == true)
         {
             ViewModel.ShowControls = false;
-            ViewModel.ShowProgressBar = false;
             _controlsVisible = false;
         }
     }
@@ -128,18 +126,6 @@ public partial class VideoPlayerView : UserControl
             HideControls();
         else
             ShowControls();
-    }
-
-    private void ShowProgressFeedback()
-    {
-        if (ViewModel != null)
-        {
-            ViewModel.ShowControls = true;
-            ViewModel.ShowProgressBar = false;
-        }
-
-        _controlsVisible = true;
-        EnsureControlsPopupOpen();
     }
 
     private void UpdatePlayPauseButton()
@@ -252,7 +238,7 @@ public partial class VideoPlayerView : UserControl
     {
         Dispatcher.BeginInvoke(() =>
         {
-            ShowProgressFeedback();
+            ShowControls();
             ResetHideControlsTimer(SeekFeedbackAutoHideDelay);
         });
     }
@@ -263,14 +249,12 @@ public partial class VideoPlayerView : UserControl
         {
             Dispatcher.BeginInvoke(UpdatePlayPauseButton);
         }
-        else if (e.PropertyName == nameof(VideoPlayerViewModel.ShowControls) ||
-                 e.PropertyName == nameof(VideoPlayerViewModel.ShowProgressBar))
+        else if (e.PropertyName == nameof(VideoPlayerViewModel.ShowControls))
         {
             Dispatcher.BeginInvoke(() =>
             {
-                var viewModel = ViewModel;
-                _controlsVisible = viewModel?.ShowControls == true;
-                if (viewModel?.ShowControls == true || viewModel?.ShowProgressBar == true)
+                _controlsVisible = ViewModel?.ShowControls == true;
+                if (_controlsVisible)
                 {
                     EnsureControlsPopupOpen();
                 }
