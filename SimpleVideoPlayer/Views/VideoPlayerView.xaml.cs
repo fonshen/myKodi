@@ -13,7 +13,7 @@ public partial class VideoPlayerView : UserControl
     private static readonly TimeSpan SeekFeedbackAutoHideDelay = TimeSpan.FromSeconds(3);
 
     private VideoPlayerViewModel? ViewModel => DataContext as VideoPlayerViewModel;
-    private bool _controlsVisible = true;
+    private bool _controlsVisible;
     private System.Windows.Threading.DispatcherTimer? _hideControlsTimer;
 
     public VideoPlayerView()
@@ -41,8 +41,8 @@ public partial class VideoPlayerView : UserControl
     private void UserControl_Loaded(object sender, RoutedEventArgs e)
     {
         AttachMediaPlayer();
-        ControlsPopup.IsOpen = true;
         _controlsVisible = ViewModel?.ShowControls == true;
+        UpdatePopupSize();
         ResetHideControlsTimer();
     }
 
@@ -57,6 +57,33 @@ public partial class VideoPlayerView : UserControl
 
             VideoView.MediaPlayer = ViewModel.MediaPlayer;
         }
+    }
+
+    private void EnsureControlsPopupOpen()
+    {
+        UpdatePopupSize();
+        if (!ControlsPopup.IsOpen)
+        {
+            ControlsPopup.IsOpen = true;
+        }
+    }
+
+    private void UpdatePopupSize()
+    {
+        if (VideoGrid.ActualWidth > 0)
+        {
+            PopupRoot.Width = VideoGrid.ActualWidth;
+        }
+
+        if (VideoGrid.ActualHeight > 0)
+        {
+            PopupRoot.Height = VideoGrid.ActualHeight;
+        }
+    }
+
+    private void VideoGrid_SizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        UpdatePopupSize();
     }
 
     private void UserControl_Unloaded(object sender, RoutedEventArgs e)
@@ -81,6 +108,7 @@ public partial class VideoPlayerView : UserControl
         }
 
         _controlsVisible = true;
+        EnsureControlsPopupOpen();
         UpdatePlayPauseButton();
     }
 
@@ -106,11 +134,12 @@ public partial class VideoPlayerView : UserControl
     {
         if (ViewModel != null)
         {
-            ViewModel.ShowControls = false;
-            ViewModel.ShowProgressBar = true;
+            ViewModel.ShowControls = true;
+            ViewModel.ShowProgressBar = false;
         }
 
-        _controlsVisible = false;
+        _controlsVisible = true;
+        EnsureControlsPopupOpen();
     }
 
     private void UpdatePlayPauseButton()
@@ -178,6 +207,27 @@ public partial class VideoPlayerView : UserControl
         }
     }
 
+    private void VideoGrid_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.OriginalSource != VideoGrid && e.OriginalSource != VideoView)
+        {
+            return;
+        }
+
+        ShowControls();
+        ResetHideControlsTimer();
+    }
+
+    private void VideoGrid_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.OriginalSource != VideoGrid && e.OriginalSource != VideoView)
+        {
+            return;
+        }
+
+        ViewModel?.StopAndGoBackCommand?.Execute(null);
+    }
+
     private void VideoPlayerView_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
     {
         if (e.OldValue is VideoPlayerViewModel oldViewModel)
@@ -213,11 +263,17 @@ public partial class VideoPlayerView : UserControl
         {
             Dispatcher.BeginInvoke(UpdatePlayPauseButton);
         }
-        else if (e.PropertyName == nameof(VideoPlayerViewModel.ShowControls))
+        else if (e.PropertyName == nameof(VideoPlayerViewModel.ShowControls) ||
+                 e.PropertyName == nameof(VideoPlayerViewModel.ShowProgressBar))
         {
             Dispatcher.BeginInvoke(() =>
             {
-                _controlsVisible = ViewModel?.ShowControls == true;
+                var viewModel = ViewModel;
+                _controlsVisible = viewModel?.ShowControls == true;
+                if (viewModel?.ShowControls == true || viewModel?.ShowProgressBar == true)
+                {
+                    EnsureControlsPopupOpen();
+                }
             });
         }
     }

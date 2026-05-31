@@ -79,6 +79,8 @@ public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
             {
                 IsPlaying = true;
                 UpdatePlaybackPositionFromPlayer();
+                ShowControls = false;
+                ShowProgressBar = false;
             });
         };
 
@@ -88,8 +90,8 @@ public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
             {
                 IsPlaying = false;
                 UpdatePlaybackPositionFromPlayer();
-                ShowControls = false;
-                ShowProgressBar = true;
+                ShowControls = true;
+                ShowProgressBar = false;
             });
         };
 
@@ -237,8 +239,8 @@ public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
             _mediaPlayer.Pause();
             IsPlaying = false;
             UpdatePlaybackPositionFromPlayer();
-            ShowControls = false;
-            ShowProgressBar = true;
+            ShowControls = true;
+            ShowProgressBar = false;
         }
         else
         {
@@ -265,8 +267,8 @@ public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
         newTime = Math.Max(0, newTime);
         _mediaPlayer.Time = newTime;
         UpdatePlaybackPosition(newTime, length);
-        ShowControls = false;
-        ShowProgressBar = true;
+        ShowControls = true;
+        ShowProgressBar = false;
         OnSeekFeedbackRequested?.Invoke();
     }
 

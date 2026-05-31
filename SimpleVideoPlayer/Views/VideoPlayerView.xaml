@@ -16,7 +16,10 @@
         <converters:BoolToOpacityConverter x:Key="BoolToOpacity"/>
     </UserControl.Resources>
 
-    <Grid x:Name="VideoGrid">
+    <Grid x:Name="VideoGrid"
+          SizeChanged="VideoGrid_SizeChanged"
+          MouseLeftButtonDown="VideoGrid_MouseLeftButtonDown"
+          MouseRightButtonDown="VideoGrid_MouseRightButtonDown">
         <vlc:VideoView x:Name="VideoView"
                        Background="Black"
                        HorizontalAlignment="Stretch"
@@ -30,7 +33,8 @@
                StaysOpen="True"
                Focusable="False"
                DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
-            <Grid Width="{Binding ActualWidth, ElementName=VideoGrid}"
+            <Grid x:Name="PopupRoot"
+                  Width="{Binding ActualWidth, ElementName=VideoGrid}"
                   Height="{Binding ActualHeight, ElementName=VideoGrid}">
                 <Grid x:Name="ControlsOverlay"
                       Background="#80000000"
