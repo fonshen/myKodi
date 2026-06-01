@@ -143,19 +143,14 @@ public partial class FolderBrowserViewModel : ViewModelBase
         _allFolders = folders;
         Categories.Clear();
 
-        var rootPath = _settingsService.Settings.VideoRootFolder;
-        if (Directory.Exists(rootPath))
+        var rootPath = Path.GetFullPath(_settingsService.Settings.VideoRootFolder).TrimEnd(Path.DirectorySeparatorChar);
+        foreach (var folder in _allFolders)
         {
-            var dirInfo = new DirectoryInfo(rootPath);
-            foreach (var subDir in dirInfo.GetDirectories())
+            var parentPath = Path.GetFullPath(Path.GetDirectoryName(folder.FolderPath) ?? string.Empty).TrimEnd(Path.DirectorySeparatorChar);
+            if (string.Equals(parentPath, rootPath, StringComparison.OrdinalIgnoreCase) &&
+                (folder.Videos.Count > 0 || folder.VideoCount > 0))
             {
-                var subFolders = new ObservableCollection<VideoFolder>();
-                ScanFolderRecursive(subDir.FullName, subFolders);
-                var categoryFolder = subFolders.FirstOrDefault();
-                if (categoryFolder != null && categoryFolder.Videos.Count > 0)
-                {
-                    Categories.Add(categoryFolder.FolderName);
-                }
+                Categories.Add(folder.FolderName);
             }
         }
 
@@ -207,55 +202,6 @@ public partial class FolderBrowserViewModel : ViewModelBase
         _ = GenerateThumbnailsInBackgroundAsync(_thumbnailCts.Token, (int)CardWidth);
     }
 
-    private void ScanFolderRecursive(string path, ObservableCollection<VideoFolder> folders)
-    {
-        try
-        {
-            var dirInfo = new DirectoryInfo(path);
-            var folder = new VideoFolder
-            {
-                FolderPath = path,
-                FolderName = dirInfo.Name
-            };
-
-            foreach (var file in dirInfo.GetFiles())
-            {
-                var ext = file.Extension.ToLowerInvariant();
-                if (ext == ".mp4" || ext == ".mkv" || ext == ".avi" || ext == ".mov" ||
-                    ext == ".wmv" || ext == ".flv" || ext == ".webm" || ext == ".m4v")
-                {
-                    var videoFile = new VideoFile
-                    {
-                        FilePath = file.FullName,
-                        FileName = file.Name,
-                        FolderPath = file.DirectoryName ?? string.Empty,
-                        FileSize = file.Length,
-                        LastModified = file.LastWriteTime
-                    };
-                    folder.Videos.Add(videoFile);
-                }
-            }
-
-            foreach (var subDir in dirInfo.GetDirectories())
-            {
-                var subFolders = new ObservableCollection<VideoFolder>();
-                ScanFolderRecursive(subDir.FullName, subFolders);
-                foreach (var sub in subFolders)
-                {
-                    folder.SubFolders.Add(sub);
-                }
-            }
-
-            folder.VideoCount = folder.Videos.Count + folder.SubFolders.Sum(f => f.VideoCount);
-
-            if (folder.VideoCount > 0)
-            {
-                folders.Add(folder);
-            }
-        }
-        catch { }
-    }
-
     public VideoFile? SelectNextVideoAfter(VideoFile? currentVideo)
     {
         if (currentVideo == null || Items.Count == 0)
@@ -263,7 +209,16 @@ public partial class FolderBrowserViewModel : ViewModelBase
             return null;
         }
 
-        var currentIndex = Items.ToList().FindIndex(i => i.Video == currentVideo);
+        var currentIndex = -1;
+        for (var i = 0; i < Items.Count; i++)
+        {
+            if (Items[i].Video == currentVideo)
+            {
+                currentIndex = i;
+                break;
+            }
+        }
+
         if (currentIndex < 0)
         {
             currentIndex = SelectedIndex;

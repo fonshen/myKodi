@@ -15,6 +15,7 @@ public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
 
     private LibVLC? _libVLC;
     private MediaPlayer? _mediaPlayer;
+    private Media? _currentMedia;
     private bool _isStartingPlayback;
     private bool _showControlsOnNextPause;
     private bool _disposed;
@@ -88,18 +89,11 @@ public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
         {
             RunOnUi(() =>
             {
+                IsPlaying = false;
                 var shouldShowControls = _showControlsOnNextPause && !_isStartingPlayback;
                 _showControlsOnNextPause = false;
                 UpdatePlaybackPositionFromPlayer();
-
-                if (!shouldShowControls)
-                {
-                    ShowControls = false;
-                    return;
-                }
-
-                IsPlaying = false;
-                ShowControls = true;
+                ShowControls = shouldShowControls;
             });
         };
 
@@ -226,8 +220,10 @@ public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
         if (_mediaPlayer != null && !string.IsNullOrEmpty(video.FilePath))
         {
             _mediaPlayer.Stop();
-            using var media = new Media(_libVLC!, video.FilePath, FromType.FromPath);
-            _mediaPlayer.Play(media);
+            _currentMedia?.Dispose();
+            _currentMedia = new Media(_libVLC!, video.FilePath, FromType.FromPath);
+            _mediaPlayer.Play(_currentMedia);
+            SetFixedPlayerVolume();
         }
     }
 
@@ -265,6 +261,7 @@ public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
         {
             _isStartingPlayback = false;
             _showControlsOnNextPause = false;
+            SetFixedPlayerVolume();
             _mediaPlayer.Play();
             IsPlaying = true;
             ShowControls = false;
@@ -290,16 +287,6 @@ public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
         UpdatePlaybackPosition(newTime, length);
         ShowControls = true;
         OnSeekFeedbackRequested?.Invoke();
-    }
-
-    private void AdjustVolume(int delta)
-    {
-        SetFixedPlayerVolume();
-    }
-
-    private void ToggleMute()
-    {
-        SetFixedPlayerVolume();
     }
 
     [RelayCommand]
@@ -329,6 +316,7 @@ public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
         if (!_disposed)
         {
             _mediaPlayer?.Stop();
+            _currentMedia?.Dispose();
             _mediaPlayer?.Dispose();
             _libVLC?.Dispose();
             _disposed = true;

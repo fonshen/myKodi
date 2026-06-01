@@ -196,6 +196,8 @@ public class RemoteControlService
         Action? onFastForward = null,
         Action? onRewind = null)
     {
+        ResetKeyState();
+
         if (onUp != null) OnUp = onUp;
         if (onDown != null) OnDown = onDown;
         if (onLeft != null) OnLeft = onLeft;
@@ -213,6 +215,15 @@ public class RemoteControlService
 
     public void ClearCallbacks()
     {
+        ResetKeyState();
         SetupDefaultMappings();
+    }
+
+    private void ResetKeyState()
+    {
+        _keyRepeatTimer.Stop();
+        _pressedKeys.Clear();
+        _isProcessing = false;
+        _currentKey = Key.None;
     }
 }

@@ -61,16 +61,36 @@ public class VideoLibraryService : IDisposable
             return folders;
         }
 
-        // 先快速扫描文件结构并创建 VideoFile（不解析时长）以加快启动速度
-        await Task.Run(() =>
+        var scannedFolders = await Task.Run(() =>
         {
-            ScanFolderRecursive(rootPath, folders, progress);
+            var result = new List<VideoFolder>();
+            ScanFolderRecursive(rootPath, result, progress);
+            return result;
         });
+
+        var dispatcher = System.Windows.Application.Current?.Dispatcher;
+        if (dispatcher != null)
+        {
+            dispatcher.Invoke(() =>
+            {
+                foreach (var folder in scannedFolders)
+                {
+                    folders.Add(folder);
+                }
+            });
+        }
+        else
+        {
+            foreach (var folder in scannedFolders)
+            {
+                folders.Add(folder);
+            }
+        }
 
         return folders;
     }
 
-    private void ScanFolderRecursive(string path, ObservableCollection<VideoFolder> folders, IProgress<string>? progress)
+    private void ScanFolderRecursive(string path, List<VideoFolder> folders, IProgress<string>? progress)
     {
         try
         {
@@ -97,7 +117,7 @@ public class VideoLibraryService : IDisposable
 
             foreach (var subDir in dirInfo.GetDirectories())
             {
-                var subFolders = new ObservableCollection<VideoFolder>();
+                var subFolders = new List<VideoFolder>();
                 ScanFolderRecursive(subDir.FullName, subFolders, progress);
                 foreach (var sub in subFolders)
                 {
@@ -109,10 +129,7 @@ public class VideoLibraryService : IDisposable
 
             if (folder.VideoCount > 0 || folder.Videos.Count > 0)
             {
-                System.Windows.Application.Current?.Dispatcher.Invoke(() =>
-                {
-                    folders.Add(folder);
-                });
+                folders.Add(folder);
             }
         }
         catch { }
